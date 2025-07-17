@@ -33,17 +33,30 @@ foodSpawn = True
 direction = 'RIGHT'
 changeTo = direction
 
+score = 0
+
 # Game over function
 def gameOver():
-    myFont = pygame.font.SysFont('monaco', 72)
+    myFont = pygame.font.SysFont('lucidaconsole', 72)
     GOsurf = myFont.render('Game over!', True, red)
     GOrect = GOsurf.get_rect()
     GOrect.midtop = (360, 15)
     playSurface.blit(GOsurf, GOrect)
     pygame.display.flip()
-    time.sleep(4)
+    showScore(0)
+    time.sleep(3)
     pygame.quit() # pygame exit
     sys.exit() # console exit
+
+def showScore(choice=1):
+    sFont = pygame.font.SysFont('lucidaconsole', 24)
+    Sssurf = sFont.render(f'Score : {score}', True, black)
+    Srect = Sssurf.get_rect()
+    if choice == 1:
+        Srect.midtop = (80, 10)
+    else:
+        Srect.midtop = (360, 120)
+    playSurface.blit(Sssurf, Srect)
 
 # Main Logic of the game
 while True:
@@ -54,15 +67,14 @@ while True:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT or event.key == ord('a'): # ASCII foe the key
                 changeTo = 'LEFT'
-            if event.key == pygame.K_DOWN or event.key == ord('s'): # ASCII foe the key
+            if event.key == pygame.K_DOWN or event.key == ord('s'):
                 changeTo = 'DOWN'
-            if event.key == pygame.K_RIGHT or event.key == ord('l'): # ASCII foe the key
+            if event.key == pygame.K_RIGHT or event.key == ord('l'):
                 changeTo = 'RIGHT'
-            if event.key == pygame.K_UP or event.key == ord('w'): # ASCII foe the key
+            if event.key == pygame.K_UP or event.key == ord('w'):
                 changeTo = 'UP'
             if event.key == pygame.K_ESCAPE:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))
-                # pygame.event.post(pygame.event.Event(QUIT))
 
     # Validation of direction
     if changeTo == 'RIGHT' and not direction == 'LEFT':
@@ -87,6 +99,7 @@ while True:
     # Snake body mechanism
     snakeBody.insert(0, list(snakePos))
     if snakePos[0] == foodPos[0] and snakePos[1] == foodPos[1]:
+        score += 1
         foodSpawn = False
     else:
         snakeBody.pop()
@@ -95,3 +108,26 @@ while True:
     if foodSpawn == False:
         foodPos = [random.randrange(1, 72)*10, random.randrange(1, 46)*10]
     foodSpawn = True
+
+    # Draw Snake
+    playSurface.fill(white)
+    for pos in snakeBody:
+        pygame.draw.rect(playSurface, green,
+        pygame.Rect(pos[0], pos[1], 10, 10))
+
+    pygame.draw.rect(playSurface, brown,
+                     pygame.Rect(foodPos[0], foodPos[1], 10, 10))
+
+    #Bound
+    if snakePos[0] > 710 or snakePos[0] < 0:
+        gameOver()
+    if snakePos[1] > 450 or snakePos[1] < 0:
+        gameOver()
+
+    for block in snakeBody[1:]:
+        if snakePos[0] == block[0] and snakePos[1] == block[1]:
+            gameOver()
+
+    showScore()
+    pygame.display.flip()
+    fpsController.tick(23) # game speed
